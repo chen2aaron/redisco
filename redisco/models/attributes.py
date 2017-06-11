@@ -4,11 +4,14 @@ Defines the fields that can be added to redisco models.
 """
 import time
 import sys
+from functools import partial
 from datetime import datetime, date, timedelta
 from dateutil.tz import tzutc, tzlocal
+from six import string_types, text_type as unicode
 from calendar import timegm
 from redisco.containers import List
 from .exceptions import FieldValidationError, MissingID
+
 
 __all__ = ['Attribute', 'CharField', 'ListField', 'DateTimeField',
         'DateField', 'TimeDeltaField', 'ReferenceField', 'Collection',
@@ -52,12 +55,16 @@ class Attribute(object):
         try:
             return getattr(instance, '_' + self.name)
         except AttributeError:
-            if callable(self.default):
-                default = self.default()
-            else:
-                default = self.default
-            self.__set__(instance, default)
-            return default
+            val = instance.db.hget(instance.key(), self.name)
+            if not val:
+                if callable(self.default):
+                    default = self.default()
+                else:
+                    default = self.default
+                val = default
+            val = self.typecast_for_read(val)
+            self.__set__(instance, val)
+            return val
 
     def __set__(self, instance, value):
         setattr(instance, '_' + self.name, value)
@@ -78,7 +85,7 @@ class Attribute(object):
         return unicode
 
     def acceptable_types(self):
-        return basestring
+        return string_types
 
     def validate(self, instance):
         val = getattr(instance, self.name)
@@ -320,8 +327,8 @@ class ListField(object):
         self.required = required
         self.validator = validator
         self.default = default or []
-        from base import Model
-        self._redisco_model = (isinstance(target_type, basestring) or
+        from .base import Model
+        self._redisco_model = (isinstance(target_type, string_types) or
             issubclass(target_type, Model))
 
     def __get__(self, instance, owner):
@@ -335,6 +342,8 @@ class ListField(object):
                 val = List(key).members
             if val is not None:
                 klass = self.value_type()
+                if klass == str:
+                    klass = partial(str, encoding='utf-8')
                 if self._redisco_model:
                     val = filter(lambda o: o is not None, [klass.objects.get_by_id(v) for v in val])
                 else:
@@ -346,8 +355,8 @@ class ListField(object):
         setattr(instance, '_' + self.name, value)
 
     def value_type(self):
-        if isinstance(self._target_type, basestring):
-            t = self._target_type
+        if isinstance(self._target_type, string_types):
+            self._target_type = partial(self._target_type, 'utf-8')
             from base import get_model_from_key
             self._target_type = get_model_from_key(self._target_type)
             if self._target_type is None:

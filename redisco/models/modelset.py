@@ -33,7 +33,7 @@ class ModelSet(Set):
         if isinstance(index, slice):
             return map(lambda id: self._get_item_with_id(id), self._set[index])
         else:
-            id = self._set[index]
+            id = str(self._set[index], 'utf-8')
             if id:
                 return self._get_item_with_id(id)
             else:
@@ -80,7 +80,7 @@ class ModelSet(Set):
         >>> [f.delete() for f in Foo.objects.all()] # doctest: +ELLIPSIS
         [...]
         """
-        if (self._filters or self._exclusions or self._zfilters) and str(id) not in self._set:
+        if (self._filters or self._exclusions or self._zfilters) and str(id, 'utf-8') not in self._set:
             return
         if self.model_class.exists(id):
             return self._get_item_with_id(id)
@@ -257,7 +257,7 @@ class ModelSet(Set):
         [...]
         """
         opts = {}
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             if k in self.model_class._indices:
                 opts[k] = v
         o = self.filter(**opts).first()
@@ -308,7 +308,7 @@ class ModelSet(Set):
         :return: the new Set
         """
         indices = []
-        for k, v in self._filters.iteritems():
+        for k, v in self._filters.items():
             index = self._build_key_from_filter_item(k, v)
             if k not in self.model_class._indices:
                 raise AttributeNotIndexed(
@@ -332,7 +332,7 @@ class ModelSet(Set):
         :return: the new Set
         """
         indices = []
-        for k, v in self._exclusions.iteritems():
+        for k, v in self._exclusions.items():
             index = self._build_key_from_filter_item(k, v)
             if k not in self.model_class._indices:
                 raise AttributeNotIndexed(
@@ -449,7 +449,8 @@ class ModelSet(Set):
         self.db.sort(old_set_key,
                      store=new_set_key,
                      start=start,
-                     num=num)
+                     num=num,
+                     alpha=True)
         if old_set_key != self.key:
             Set(old_set_key, db=self.db).set_expire()
         new_list = List(new_set_key, db=self.db)

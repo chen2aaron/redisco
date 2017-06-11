@@ -3,6 +3,7 @@
 
 import collections
 from functools import partial
+from six import text_type as unicode
 from . import default_expire_time
 
 
