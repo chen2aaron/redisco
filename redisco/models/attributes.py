@@ -7,7 +7,7 @@ import sys
 from functools import partial
 from datetime import datetime, date, timedelta
 from dateutil.tz import tzutc, tzlocal
-from six import string_types, text_type as unicode
+from six import string_types, integer_types, text_type as unicode
 from calendar import timegm
 from redisco.containers import List
 from .exceptions import FieldValidationError, MissingID
@@ -174,7 +174,7 @@ class IntegerField(Attribute):
         return int
 
     def acceptable_types(self):
-        return (int, long)
+        return integer_types
 
 
 class FloatField(Attribute):
