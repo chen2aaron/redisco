@@ -341,7 +341,7 @@ class ListField(object):
                 if klass == str:
                     klass = partial(str, encoding='utf-8')
                 if self._redisco_model:
-                    val = filter(lambda o: o is not None, [klass.objects.get_by_id(v) for v in val])
+                    val = list(filter(lambda o: o is not None, [klass.objects.get_by_id(v) for v in val]))
                 else:
                     val = [klass(v) for v in val]
             self.__set__(instance, val)
@@ -352,8 +352,8 @@ class ListField(object):
 
     def value_type(self):
         if isinstance(self._target_type, string_types):
-            self._target_type = partial(self._target_type, 'utf-8')
-            from base import get_model_from_key
+            t = self._target_type
+            from .base import get_model_from_key
             self._target_type = get_model_from_key(self._target_type)
             if self._target_type is None:
                 raise ValueError("Unknown Redisco class %s" % t)
