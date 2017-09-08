@@ -55,16 +55,12 @@ class Attribute(object):
         try:
             return getattr(instance, '_' + self.name)
         except AttributeError:
-            val = instance.db.hget(instance.key(), self.name)
-            if not val:
-                if callable(self.default):
-                    default = self.default()
-                else:
-                    default = self.default
-                val = default
-            val = self.typecast_for_read(val)
-            self.__set__(instance, val)
-            return val
+            if callable(self.default):
+                default = self.default()
+            else:
+                default = self.default
+            self.__set__(instance, default)
+            return default
 
     def __set__(self, instance, value):
         setattr(instance, '_' + self.name, value)

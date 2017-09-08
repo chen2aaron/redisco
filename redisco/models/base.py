@@ -547,7 +547,7 @@ class Model(with_metaclass(ModelBase)):
 
     def _initialize_id(self):
         """Initializes the id of the instance."""
-        self._id = str(self.db.incr(self._key['id']))
+        self._id = _str(self.db.incr(self._key['id']))
 
     def _write(self, _new=False):
         """Writes the values of the attributes to the datastore.
