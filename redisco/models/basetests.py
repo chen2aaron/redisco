@@ -90,11 +90,11 @@ class ModelTestCase(RediscoTestCase):
 
     def test_repr(self):
         person1 = Person(first_name="Granny", last_name="Goose")
-        self.assertEqual("<Person {'active': False, 'first_name': 'Granny', 'last_name': 'Goose'}>",
+        self.assertEqual("<Person {'first_name': 'Granny', 'last_name': 'Goose', 'active': False}>",
                 repr(person1))
 
         self.assert_(person1.save())
-        self.assertEqual("<Person:1 {'active': False, 'first_name': 'Granny', 'last_name': 'Goose', 'id': '1'}>",
+        self.assertEqual("<Person:1 {'first_name': 'Granny', 'last_name': 'Goose', 'active': False, 'id': '1'}>",
                 repr(person1))
 
     def test_update(self):

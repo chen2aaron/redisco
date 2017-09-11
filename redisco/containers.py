@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import
 import collections
-from functools import partial
 from . import default_expire_time
 import six
 from six.moves import range
@@ -38,7 +37,7 @@ class Container(object):
         1
         >>> s.clear()
         >>> s.members
-        set([])
+        set()
 
 
         """
@@ -105,8 +104,8 @@ class Set(Container):
         3
         >>> s.add(["4"])
         1
-        >>> print s
-        <Set 'test' set(['1', '3', '2', '4'])>
+        >>> s.members == {'4', '2', '1', '3'}
+        True
         >>> s.clear()
 
         """
@@ -141,7 +140,7 @@ class Set(Container):
         >>> s.spop()
         '1'
         >>> s.members
-        set([])
+        set()
 
         """
         return self.db.spop(self.key)
@@ -259,9 +258,9 @@ class Set(Container):
         2
         >>> s3 = s1.union('key3', s2)
         >>> s3.key
-        u'key3'
-        >>> s3.members
-        set(['a', 'c', 'b', 'e', 'd'])
+        'key3'
+        >>> s3.members == {'e', 'd', 'b', 'a', 'c'}
+        True
         >>> s1.clear()
         >>> s2.clear()
         >>> s3.clear()
@@ -290,9 +289,9 @@ class Set(Container):
         2
         >>> s3 = s1.intersection('key3', s2)
         >>> s3.key
-        u'key3'
+        'key3'
         >>> s3.members
-        set(['c'])
+        {'c'}
         >>> s1.clear()
         >>> s2.clear()
         >>> s3.clear()
@@ -322,9 +321,9 @@ class Set(Container):
         2
         >>> s3 = s1.difference('key3', s2)
         >>> s3.key
-        u'key3'
-        >>> s3.members
-        set(['a', 'b'])
+        'key3'
+        >>> s3.members == {'a', 'b'}
+        True
         >>> s1.clear()
         >>> s2.clear()
         >>> s3.clear()
@@ -508,7 +507,7 @@ class List(Container):
 
         >>> l = List("test")
         >>> l.push(['a', 'b', 'c', 'd'])
-        4L
+        4
         >>> l.lrange(1, 2)
         ['b', 'c']
         >>> l.clear()
@@ -525,7 +524,7 @@ class List(Container):
 
         >>> l = List("test")
         >>> l.lpush(['a', 'b'])
-        2L
+        2
         >>> l.clear()
         """
         return self.db.lpush(self.key, *_parse_values(values))
@@ -539,9 +538,9 @@ class List(Container):
 
         >>> l = List("test")
         >>> l.lpush(['a', 'b'])
-        2L
+        2
         >>> l.rpush(['c', 'd'])
-        4L
+        4
         >>> l.members
         ['b', 'a', 'c', 'd']
         >>> l.clear()
@@ -592,7 +591,7 @@ class List(Container):
 
         >>> l = List('list1')
         >>> l.push(['a', 'b', 'c'])
-        3L
+        3
         >>> l.rpoplpush('list2')
         'c'
         >>> l2 = List('list2')
@@ -659,7 +658,7 @@ class List(Container):
 
         >>> l = List('test')
         >>> l.push(['a', 'b', 'c'])
-        3L
+        3
         >>> l.lset(0, 'e')
         True
         >>> l.members
@@ -1214,7 +1213,7 @@ class Hash(Container, collections.MutableMapping):
 
         >>> h = Hash("foo")
         >>> h.hset("bar", "value")
-        1L
+        1
         >>> h.clear()
         """
         return self.db.hset(self.key, member, value)
@@ -1228,7 +1227,7 @@ class Hash(Container, collections.MutableMapping):
 
         >>> h = Hash("foo")
         >>> h.hset("bar", "value")
-        1L
+        1
         >>> h.hdel("bar")
         1
         >>> h.clear()
@@ -1276,9 +1275,9 @@ class Hash(Container, collections.MutableMapping):
 
         >>> h = Hash("foo")
         >>> h.hincrby("bar", 10)
-        10L
+        10
         >>> h.hincrby("bar", 2)
-        12L
+        12
         >>> h.clear()
         """
         return self.db.hincrby(self.key, field, increment)

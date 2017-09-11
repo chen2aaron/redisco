@@ -156,7 +156,7 @@ class ModelSet(Set):
         >>> Foo(name="Edison", exclude_me=True).save()
         True
         >>> Foo.objects.exclude(exclude_me=True).first().name
-        u'Einstein'
+        'Einstein'
         >>> [f.delete() for f in Foo.objects.all()] # doctest: +ELLIPSIS
         [...]
         """
@@ -190,9 +190,9 @@ class ModelSet(Set):
         >>> Foo(name="Zztop").save()
         True
         >>> Foo.objects.all().order("-name").first().name
-        u'Zztop'
+        'Zztop'
         >>> Foo.objects.all().order("name").first().name
-        u'Abba'
+        'Abba'
         >>> [f.delete() for f in Foo.objects.all()] # doctest: +ELLIPSIS
         [...]
         """

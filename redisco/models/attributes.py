@@ -69,7 +69,8 @@ class Attribute(object):
     def typecast_for_read(self, value):
         """Typecasts the value for reading from Redis."""
         # The redis client encodes all unicode data to utf-8 by default.
-        return value.decode('utf-8')
+
+        return six.text_type(value)
 
     def typecast_for_storage(self, value):
         """Typecasts the value for storing to Redis."""
