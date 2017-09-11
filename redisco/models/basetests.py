@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import time
-from threading import Thread
-import redis
-import redisco
 import unittest
 from datetime import date
+from threading import Thread
+
+import six
+from dateutil.tz import tzlocal
+
+import redisco
 from redisco import models
 from redisco.models import managers
 from redisco.models.base import Mutex
-from dateutil.tz import tzlocal
 
 
 class Person(models.Model):
@@ -81,7 +85,7 @@ class ModelTestCase(RediscoTestCase):
 
         p = Person.objects.filter(first_name=u"Niña").first()
         self.assert_(p)
-        self.assert_(isinstance(p.full_name(), unicode))
+        self.assert_(isinstance(p.full_name(), six.text_type))
         self.assertEqual(u"Niña Jose", p.full_name())
 
     def test_repr(self):

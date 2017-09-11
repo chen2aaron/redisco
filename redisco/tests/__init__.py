@@ -1,18 +1,27 @@
+from __future__ import absolute_import
 import os
 import unittest
-from redisco.containerstests import (SetTestCase, ListTestCase, TypedListTestCase, 
-        SortedSetTestCase, HashTestCase)
-from redisco.models.basetests import (ModelTestCase, DateFieldTestCase, FloatFieldTestCase,
-        BooleanFieldTestCase, ListFieldTestCase, ReferenceFieldTestCase,
-        TimeDeltaFieldTestCase, DateTimeFieldTestCase, CounterFieldTestCase,
-        CharFieldTestCase, MutexTestCase)
 
 import redisco
-REDIS_DB = int(os.environ.get('REDIS_DB', 15)) # WARNING TESTS FLUSHDB!!!
+from redisco.containerstests import (SetTestCase, ListTestCase,
+                                     TypedListTestCase,
+                                     SortedSetTestCase, HashTestCase)
+from redisco.models.basetests import (ModelTestCase, DateFieldTestCase,
+                                      FloatFieldTestCase,
+                                      BooleanFieldTestCase, ListFieldTestCase,
+                                      ReferenceFieldTestCase,
+                                      TimeDeltaFieldTestCase,
+                                      DateTimeFieldTestCase,
+                                      CounterFieldTestCase,
+                                      CharFieldTestCase, MutexTestCase)
+
+REDIS_DB = int(os.environ.get('REDIS_DB', 15))  # WARNING TESTS FLUSHDB!!!
 REDIS_PORT = int(os.environ.get('REDIS_PORT', 6379))
 redisco.connection_setup(host="localhost", port=REDIS_PORT, db=REDIS_DB)
 
-typed_list_suite = unittest.TestLoader().loadTestsFromTestCase(TypedListTestCase)
+typed_list_suite = unittest.TestLoader().loadTestsFromTestCase(
+    TypedListTestCase)
+
 
 def all_tests():
     suite = unittest.TestSuite()

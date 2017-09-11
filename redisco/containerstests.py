@@ -1,6 +1,10 @@
+from __future__ import absolute_import
 import unittest
 import redisco
 from redisco import containers as cont
+import six
+from six.moves import range
+from six.moves import zip
 
 
 class SetTestCase(unittest.TestCase):
@@ -293,7 +297,7 @@ class ListTestCase(unittest.TestCase):
     def test_pop_onto(self):
         a = cont.List('alpha')
         b = cont.List('beta')
-        a.extend(range(10))
+        a.extend(list(range(10)))
 
         # test pop_onto
         a_snap = list(a.members)
@@ -345,20 +349,20 @@ class TypedListTestCase(unittest.TestCase):
         self.client.flushdb()
 
     def test_basic_types(self):
-        alpha = cont.TypedList('alpha', unicode, type_args=('UTF-8',))
+        alpha = cont.TypedList('alpha', six.text_type, type_args=('UTF-8',))
         monies = u'\u0024\u00a2\u00a3\u00a5'
         alpha.append(monies)
         val = alpha[-1]
         self.assertEquals(monies, val)
 
         beta = cont.TypedList('beta', int)
-        for i in xrange(1000):
+        for i in range(1000):
             beta.append(i)
         for i, x in enumerate(beta):
             self.assertEquals(i, x)
 
         charlie = cont.TypedList('charlie', float)
-        for i in xrange(100):
+        for i in range(100):
             val = 1 * pow(10, i*-1)
             charlie.append(val)
         for i, x in enumerate(charlie):
@@ -448,9 +452,9 @@ class HashTestCase(unittest.TestCase):
         self.assertEqual({'name': "Richard Cypher",
             'real_name': "Richard Rahl"}, h.dict)
 
-        self.assertEqual(['name', 'real_name'], h.keys())
+        self.assertEqual(['name', 'real_name'], list(h.keys()))
         self.assertEqual(["Richard Cypher", "Richard Rahl"],
-            h.values())
+            list(h.values()))
 
         del h['name']
         pulled = self.client.hgetall('hkey')

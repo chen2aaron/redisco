@@ -11,3 +11,6 @@ dump.rdb
 /.emacs.desktop
 /redisco/.ropeproject/config.py
 .ropeproject
+venv
+venv2
+.idea

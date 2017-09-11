@@ -1,11 +1,15 @@
 """
 Handles the queries.
 """
-from .attributes import IntegerField, DateTimeField
+from __future__ import absolute_import
+
+import six
+
 import redisco
-from redisco.containers import SortedSet, Set, List, NonPersistentList
-from .exceptions import AttributeNotIndexed
+from redisco.containers import SortedSet, Set, List
 from .attributes import ZINDEXABLE
+from .exceptions import AttributeNotIndexed
+
 
 # Model Set
 class ModelSet(Set):
@@ -31,7 +35,7 @@ class ModelSet(Set):
         Will look in _set to get the id and simply return the instance of the model.
         """
         if isinstance(index, slice):
-            return map(lambda id: self._get_item_with_id(id), self._set[index])
+            return [self._get_item_with_id(id) for id in self._set[index]]
         else:
             id = self._set[index]
             if id:
@@ -44,7 +48,7 @@ class ModelSet(Set):
             m = self._set[:30]
         else:
             m = self._set
-        s = map(lambda id: self._get_item_with_id(id), m)
+        s = [self._get_item_with_id(id) for id in m]
         return "%s" % s
 
     def __iter__(self):
@@ -257,7 +261,7 @@ class ModelSet(Set):
         [...]
         """
         opts = {}
-        for k, v in kwargs.iteritems():
+        for k, v in six.iteritems(kwargs):
             if k in self.model_class._indices:
                 opts[k] = v
         o = self.filter(**opts).first()
@@ -308,7 +312,7 @@ class ModelSet(Set):
         :return: the new Set
         """
         indices = []
-        for k, v in self._filters.iteritems():
+        for k, v in six.iteritems(self._filters):
             index = self._build_key_from_filter_item(k, v)
             if k not in self.model_class._indices:
                 raise AttributeNotIndexed(
@@ -332,7 +336,7 @@ class ModelSet(Set):
         :return: the new Set
         """
         indices = []
-        for k, v in self._exclusions.iteritems():
+        for k, v in six.iteritems(self._exclusions):
             index = self._build_key_from_filter_item(k, v)
             if k not in self.model_class._indices:
                 raise AttributeNotIndexed(
@@ -354,7 +358,7 @@ class ModelSet(Set):
         :return: a SortedSet with the ids.
 
         """
-        k, v = self._zfilters[0].items()[0]
+        k, v = list(self._zfilters[0].items())[0]
         try:
             att, op = k.split('__')
         except ValueError:

@@ -2,11 +2,15 @@
 """
 Defines the fields that can be added to redisco models.
 """
-import time
+from __future__ import absolute_import
+
 import sys
-from datetime import datetime, date, timedelta
-from dateutil.tz import tzutc, tzlocal
 from calendar import timegm
+from datetime import datetime, date, timedelta
+
+import six
+from dateutil.tz import tzutc, tzlocal
+
 from redisco.containers import List
 from .exceptions import FieldValidationError, MissingID
 
@@ -70,15 +74,15 @@ class Attribute(object):
     def typecast_for_storage(self, value):
         """Typecasts the value for storing to Redis."""
         try:
-            return unicode(value)
+            return six.text_type(value)
         except UnicodeError:
             return value.decode('utf-8')
 
     def value_type(self):
-        return unicode
+        return six.text_type
 
     def acceptable_types(self):
-        return basestring
+        return six.string_types
 
     def validate(self, instance):
         val = getattr(instance, self.name)
@@ -88,7 +92,7 @@ class Attribute(object):
             errors.append((self.name, 'bad type',))
         # validate first standard stuff
         if self.required:
-            if val is None or not unicode(val).strip():
+            if val is None or not six.text_type(val).strip():
                 errors.append((self.name, 'required'))
         # validate uniquness
         if val and self.unique:
@@ -161,13 +165,13 @@ class IntegerField(Attribute):
     def typecast_for_storage(self, value):
         if value is None:
             return "0"
-        return unicode(value)
+        return six.text_type(value)
 
     def value_type(self):
         return int
 
     def acceptable_types(self):
-        return (int, long)
+        return six.integer_types
 
 
 class FloatField(Attribute):
@@ -320,8 +324,8 @@ class ListField(object):
         self.required = required
         self.validator = validator
         self.default = default or []
-        from base import Model
-        self._redisco_model = (isinstance(target_type, basestring) or
+        from .base import Model
+        self._redisco_model = (isinstance(target_type, six.string_types) or
             issubclass(target_type, Model))
 
     def __get__(self, instance, owner):
@@ -336,7 +340,7 @@ class ListField(object):
             if val is not None:
                 klass = self.value_type()
                 if self._redisco_model:
-                    val = filter(lambda o: o is not None, [klass.objects.get_by_id(v) for v in val])
+                    val = [o for o in [klass.objects.get_by_id(v) for v in val] if o is not None]
                 else:
                     val = [klass(v) for v in val]
             self.__set__(instance, val)
@@ -346,9 +350,9 @@ class ListField(object):
         setattr(instance, '_' + self.name, value)
 
     def value_type(self):
-        if isinstance(self._target_type, basestring):
+        if isinstance(self._target_type, six.string_types):
             t = self._target_type
-            from base import get_model_from_key
+            from .base import get_model_from_key
             self._target_type = get_model_from_key(self._target_type)
             if self._target_type is None:
                 raise ValueError("Unknown Redisco class %s" % t)
@@ -495,7 +499,7 @@ class ReferenceField(object):
 class Counter(IntegerField):
     def __init__(self, **kwargs):
         super(Counter, self).__init__(**kwargs)
-        if not kwargs.has_key('default') or self.default is None:
+        if 'default' not in kwargs or self.default is None:
             self.default = 0
 
     def __set__(self, instance, value):

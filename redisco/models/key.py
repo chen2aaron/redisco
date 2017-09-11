@@ -1,9 +1,14 @@
+from __future__ import absolute_import
+
+import six
+
 try:
-    unicode
+    six.text_type
 except NameError:
     # Python 3
-    basestring = unicode = str
+    six.string_types = six.text_type = str
 
-class Key(unicode):
+
+class Key(six.text_type):
     def __getitem__(self, key):
         return Key(u"%s:%s" % (self, key))
