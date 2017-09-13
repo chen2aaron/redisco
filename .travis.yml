@@ -7,6 +7,6 @@ services:
   - redis-server
 # command to install redisco with dependencies
 install:
-  - pip install . --use-mirrors
+  - pip install -r requirements.txt
 # command to run tests
 script: nosetests --with-doctest
