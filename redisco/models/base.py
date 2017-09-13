@@ -440,8 +440,8 @@ class Model(six.with_metaclass(ModelBase, object)):
         ...    title = models.Attribute()
         ...
         >>> f = Foo(name="Einstein", title="Mr.")
-        >>> f.attributes_dict
-        {'name': 'Einstein', 'title': 'Mr.'}
+        >>> f.attributes_dict == {'name': 'Einstein', 'title': 'Mr.'}
+        True
 
 
         .. NOTE: the key ``id`` is present *only if* the object has been saved before.
