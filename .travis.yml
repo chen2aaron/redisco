@@ -2,11 +2,14 @@ language: python
 python:
   - "2.6"
   - "2.7"
+  - "3.4"
+  - "3.5"
   - "3.6"
 services:
   - redis-server
 # command to install redisco with dependencies
 install:
+  - pip install .
   - pip install -r requirements.txt
 # command to run tests
 script: nosetests --with-doctest
