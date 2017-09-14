@@ -428,6 +428,39 @@ class Model(six.with_metaclass(ModelBase, object)):
         """
         self.incr(att, -1 * val)
 
+    def to_dict(self):
+        """
+        Return all attributes to python dict
+        >>> from redisco import models
+        >>> class Bar(models.Model):
+        ...    name = models.Attribute()
+        >>> class Foo(models.Model):
+        ...    name = models.Attribute()
+        ...    l1 = models.ListField(int)
+        ...    l2 = models.ListField(Bar)
+        ...    l3 = models.ListField('Bar')
+        ...    l4 = models.ReferenceField(Bar)
+        >>> b1 = Bar.objects.create(name="AL")
+        >>> b2 = Bar.objects.create(name="BT")
+        >>> b3 = Bar.objects.create(name="CE")
+        >>> b4 = Bar.objects.create(name="DC")
+        >>> f = Foo(name="Einstein", l1=[3,3,3,1,2], l2=[b1,b2], l3=[b3], l4=b4)
+        >>> f.to_dict() == {'name': 'Einstein', 'l4_id': '4', 'l1': [3, 3, 3, 1, 2], 'l2': [{'name': 'AL', 'id': '1'}, {'name': 'BT', 'id': '2'}], 'l3': [{'name': 'CE', 'id': '3'}], 'l4': {'name': 'DC', 'id': '4'}}
+        True
+        """
+        h = {}
+        for k in self.attributes.keys():
+            h[k] = getattr(self, k)
+        for k in self.lists.keys():
+            h[k] = [i.attributes_dict if isinstance(i, Model) else i
+                    for i in getattr(self, k)]
+        for k in self.references.keys():
+            i = getattr(self, k)
+            h[k] = i.attributes_dict if isinstance(i, Model) else i
+        if 'id' not in list(self.attributes.keys()) and not self.is_new():
+            h['id'] = self.id
+        return h
+
     @property
     def attributes_dict(self):
         """
