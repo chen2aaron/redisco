@@ -210,6 +210,48 @@ class ModelTestCase(RediscoTestCase):
 
         self.assertEqual(0, self.client.zcard("Event:created_on"))
 
+
+    def test_expire(self):
+        Person.objects.create(first_name="Granny", last_name="Goose")
+        Person.objects.create(first_name="Clark", last_name="Kent")
+        Person.objects.create(first_name="Granny", last_name="Mommy")
+        Person.objects.create(first_name="Granny", last_name="Kent")
+
+        for person in Person.objects.all():
+            person.expire(1)
+
+        time.sleep(1)
+        self.assertEqual(bool(Person.objects.filter(first_name="Granny")), False)
+        self.assertEqual(bool(Person.objects.filter(first_name="Clark")), False)
+        # todo auto remove smembers if expire
+        # count = len(Person.objects.all())
+        # self.assertEqual(count, 0)
+        # self.assertEqual(0, self.client.scard('Person:all'))
+
+        class Event(models.Model):
+            name = models.CharField(required=True)
+            created_on = models.DateField(required=True)
+
+        from datetime import date
+
+        Event.objects.create(name="Event #1", created_on=date.today()).expire(1)
+        Event.objects.create(name="Event #2", created_on=date.today()).expire(2)
+        Event.objects.create(name="Event #3", created_on=date.today()).expire(3)
+        Event.objects.create(name="Event #4", created_on=date.today())
+
+        time.sleep(1)
+        self.assertEqual(bool(Event.objects.filter(name="Event #1")), False)
+        self.assertEqual(bool(Event.objects.filter(name="Event #2")), True)
+        self.assertEqual(bool(Event.objects.filter(name="Event #3")), True)
+        self.assertEqual(bool(Event.objects.filter(name="Event #4")), True)
+        time.sleep(1)
+        self.assertEqual(bool(Event.objects.filter(name="Event #1")), False)
+        self.assertEqual(bool(Event.objects.filter(name="Event #2")), False)
+        self.assertEqual(bool(Event.objects.filter(name="Event #3")), True)
+        self.assertEqual(bool(Event.objects.filter(name="Event #4")), True)
+
+        # self.assertEqual(0, self.client.zcard("Event:created_on"))
+
     def test_filter(self):
         Person.objects.create(first_name="Granny", last_name="Goose")
         Person.objects.create(first_name="Clark", last_name="Kent")

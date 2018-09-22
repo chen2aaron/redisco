@@ -379,6 +379,14 @@ class Model(six.with_metaclass(ModelBase, object)):
         pipeline.delete(self.key())
         pipeline.execute()
 
+    def expire(self, time):
+        """Set the object expire time"""
+        pipeline = self.db.pipeline()
+        self._expire_from_indices(pipeline, time)
+        # self._delete_from_indices(pipeline)
+        pipeline.expire(self.key(), time)
+        pipeline.execute()
+
     def is_new(self):
         """
         Returns True if the instance is new.
@@ -709,6 +717,19 @@ class Model(six.with_metaclass(ModelBase, object)):
             pipeline.zrem(index, self.id)
         pipeline.delete(s.key)
         pipeline.delete(z.key)
+
+    def _expire_from_indices(self, pipeline, time):
+        """Set the object's id from the sets(indices) it has been added
+        to and its list of indices (used for housekeeping) expire time.
+        """
+        s = Set(self.key()['_indices'], pipeline=self.db)
+        z = Set(self.key()['_zindices'], pipeline=self.db)
+        for index in s.members:
+            pipeline.expire(index, time)
+        for index in z.members:
+            pipeline.expire(index, time)
+        pipeline.expire(s.key, time)
+        pipeline.expire(z.key, time)
 
     def _index_key_for(self, att, value=None):
         """Returns a key based on the attribute and its value.
